@@ -1,0 +1,50 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="stylesheet" href="css/dss.css" media="all" />
+<link rel="shortcut icon" href="images/favicon.ico" >
+<link rel="icon" type="image/gif" href="images/favicon_animated.gif" >
+<title>DSS</title>
+</head>
+<body>
+<div id="mainContainer">
+	<div id="header">
+    	<a href="index.html"><img src="images/dss-logo.png" alt="Back to index" />	</a>
+        <h1 style="position:absolute; top:30px; left:130px;">DSS - Standard</h1>
+        <a href="mailto:dgmarkt.Project-DSS@arhs-developments.com?subject=Feedback%20to%20SfR" class="bug">Send Feedback</a>
+    </div>
+    <div id="content">
+        <ul class="softAccess">
+        	<li><input type="button" value="TL Manager" class="button" onclick="window.open('tlmanager-tl.jnlp.jsp', 'tlmanager_tl')" />
+        	<a style="position: absolute; left: 6px; top:30px; font-size:0.85em; color:#222" href="tlmanager-lotl.jnlp.jsp">Or open it in "LOTL-Mode"</a>
+        	</li>
+            <li><input type="button" value="Signature Applet" class="button" onclick="window.location = 'signature.jsp'"/></li>
+        </ul>
+        <h3>Info</h3>
+        <p>Please see the notes below for the features of the two applications:</p>
+        <div class="columnContainer">
+        	<div class="column" style="margin-right:1.5%;">
+            	<h3>TL Manager</h3>
+                <ul>
+                	<li>A Trusted List and List of the List can be created from scratch.</li>
+                	<li>An existing TSL can be loaded, edited, signed and saved.</li>
+                	<li>A basic validation is performed at the first step of creating a signature.</li>
+                </ul>
+            </div>
+            <div class="column">
+            	<h3>Signature Applet</h3>
+                <ul>
+                	<li>XML files can be signed with an enveloped/enveloping/detached XAdES signature.</li>
+                    <li>PDF files can be signed with an enveloped PAdES signature. </li>
+                    <li>Arbitrary binary files can be signed with an enveloping/detached CAdES signature or ASiC-S</li>
+                    <li>A user can use PKCS#11-compliant SSCD, MSCAPI and PKCS#12 to sign.</li>
+                    <li>Validation report is available on CAdES, PAdES, XAdES signature. </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

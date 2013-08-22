@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>eu.europa.ec.markt.dss</groupId>
+		<artifactId>app-dss</artifactId>
+		<version>2.0.1</version>
+	</parent>
+	<name>DSS Common</name>
+	<description>DSS Common. Contains code which is commonly used
+  throughout several other modules.</description>
+	<artifactId>dss-common</artifactId>
+	<packaging>jar</packaging>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<encoding>UTF-8</encoding>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaIncludes>
+								<schemaInclude>ts_102231v030102_sie_xsd.xsd</schemaInclude>
+								<schemaInclude>ts_102231v030102_additionaltypes_xsd.xsd</schemaInclude>
+								<schemaInclude>XAdESv141.xsd</schemaInclude>
+							</schemaIncludes>
+							<debug>true</debug>
+							<verbose>true</verbose>
+							<catalog>src/main/resources/catalog.cat</catalog>
+							<bindingIncludes>
+								<include>bindings.xjb.xml</include>
+							</bindingIncludes>
+							<specVersion>2.1</specVersion>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<java.util.logging.config.file>
+							logging.properties</java.util.logging.config.file>
+					</systemPropertyVariables>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+	<dependencies>
+		<dependency>
+			<groupId>eu.europa.ec.markt.dss</groupId>
+			<artifactId>dss-spi</artifactId>
+		</dependency>
+	</dependencies>
+</project>

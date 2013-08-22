@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="
+       http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+       http://www.springframework.org/schema/aop
+       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd">
+
+	<import resource="classpath:/dss_applicationContext_cxf.xml" />
+
+	<bean id="httpDataLoader"
+		class="eu.europa.ec.markt.dss.validation.https.CommonsHttpDataLoader">
+	</bean>
+
+	<bean id="cacheCrlSource" class="eu.europa.ec.markt.dss.validation.crl.OnlineCRLSource">
+		<property name="urlDataLoader" ref="httpDataLoader" />
+	</bean>
+
+	<bean id="dataSource"
+		class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
+		<property name="driverClassName" value="org.hsqldb.jdbcDriver"></property>
+		<property name="url" value="jdbc:hsqldb:mem:testdb"></property>
+		<property name="username" value="sa"></property>
+		<property name="password" value=""></property>
+	</bean>
+
+	<bean id="crlSource"
+		class="eu.europa.ec.markt.dss.validation.crl.JdbcCacheCRLSource">
+		<property name="cachedSource" ref="cacheCrlSource" />
+		<property name="dataSource" ref="dataSource"></property>
+	</bean>
+
+	<bean id="ocspSource" class="eu.europa.ec.markt.dss.validation.ocsp.OnlineOCSPSource">
+		<property name="httpDataLoader">
+			<bean class="eu.europa.ec.markt.dss.validation.https.CommonsHttpDataLoader">
+				<property name="contentType" value="application/ocsp-request"></property>
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="AIACertificateRequestHandler"
+		class="eu.europa.ec.markt.dss.applet.service.AIACertificateRequestHandler">
+		<property name="aiaCertificateSourceFactory">
+			<bean
+				class="eu.europa.ec.markt.dss.validation.certificate.AIACertificateFactoryImpl">
+				<property name="httpDataLoader" ref="httpDataLoader" />
+			</bean>
+		</property>
+	</bean>
+
+	<bean id="CRLRequestHandler" class="eu.europa.ec.markt.dss.applet.service.CRLRequestHandler">
+		<property name="crlSource" ref="crlSource" />
+	</bean>
+
+	<bean id="OCSPRequestHandler"
+		class="eu.europa.ec.markt.dss.applet.service.OCSPRequestHandler">
+		<property name="ocspSource" ref="ocspSource">
+		</property>
+	</bean>
+
+	<bean id="TrustedListSource"
+		class="eu.europa.ec.markt.dss.validation.tsl.ReloadableTrustListCertificateSource" init-method="refresh">
+		<property name="tslLoader" ref="httpDataLoader" />
+		<property name="checkSignature" value="false"></property>
+		<property name="lotlCertificate" value="classpath://ec.europa.eu.crt"></property>
+		<property name="lotlUrl"
+			value="https://ec.europa.eu/information_society/policy/esignature/trusted-list/tl-mp.xml"></property>
+	</bean>
+
+	<bean id="PotentialIssuersRequestHandler"
+		class="eu.europa.ec.markt.dss.applet.service.PotentialIssuersRequestHandler">
+		<property name="certificateSource" ref="TrustedListSource" />
+	</bean>
+
+	<bean id="TimestampRequestHandler"
+		class="eu.europa.ec.markt.dss.applet.service.TimestampRequestHandler">
+		<property name="tspSource" ref="TspSource" />
+	</bean>
+
+	<bean id="TspSource" class="eu.europa.ec.markt.dss.validation.tsp.OnlineTSPSource">
+		<property name="tspServer" value="http://tsa.belgium.be/connect" />
+	</bean>
+
+	<!-- The TrustedLists are reloaded every minute -->
+	<bean id="TLReload"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="TrustedListSource" />
+		<property name="targetMethod" value="refresh" />
+		<property name="concurrent" value="false" />
+	</bean>
+
+	<bean id="simpleTrigger" class="org.springframework.scheduling.quartz.SimpleTriggerBean">
+		<property name="jobDetail" ref="TLReload" />
+		<property name="startDelay" value="600000" />
+		<property name="repeatInterval" value="600000" />
+
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean"
+		destroy-method="destroy">
+		<property name="triggers">
+			<list>
+				<ref bean="simpleTrigger" />
+			</list>
+		</property>
+	</bean>
+
+</beans>
