@@ -45,6 +45,7 @@ import org.bouncycastle.ocsp.UnknownStatus;
  * 
  *
  * @version $Revision: 1867 $ - $Date: 2013-04-08 13:44:56 +0200 (Mon, 08 Apr 2013) $
+ * Patched by Inventi.
  */
 
 public class OCSPCertificateVerifier implements CertificateStatusVerifier {
@@ -86,14 +87,19 @@ public class OCSPCertificateVerifier implements CertificateStatusVerifier {
 
             BasicOCSPResp basicOCSPResp = (BasicOCSPResp) ocspResp;
 
-            CertificateID certificateId = new CertificateID(CertificateID.HASH_SHA1, certificate,
-                    childCertificate.getSerialNumber());
+            //CertificateID certificateId = new CertificateID(CertificateID.HASH_SHA1, certificate,
+            //        childCertificate.getSerialNumber());
             SingleResp[] singleResps = basicOCSPResp.getResponses();
             for (SingleResp singleResp : singleResps) {
 
                 CertificateID responseCertificateId = singleResp.getCertID();
 
-                if (false == certificateId.equals(responseCertificateId)) {
+                // Patched by Inventi: the original code line below won't work due to
+                // the way certificateId algorithm is constructed. It hardcodes SHA1 with
+                // parameter DERNull while some OCSP providers might return SHA1 with no
+                // parameters
+                // if (false == certificateId.equals(responseCertificateId)) {
+                if (false == responseCertificateId.matchesIssuer(certificate, "BC")) {
                     continue;
                 }
 
@@ -142,3 +148,4 @@ public class OCSPCertificateVerifier implements CertificateStatusVerifier {
     }
 
 }
+

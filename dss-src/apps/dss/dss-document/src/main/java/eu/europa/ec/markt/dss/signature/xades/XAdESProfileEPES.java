@@ -20,6 +20,11 @@
 
 package eu.europa.ec.markt.dss.signature.xades;
 
+import java.util.List;
+
+import javax.xml.crypto.dsig.Reference;
+
+import eu.europa.ec.markt.dss.signature.Document;
 import eu.europa.ec.markt.dss.signature.SignatureParameters;
 import eu.europa.ec.markt.tsl.jaxb.xades.DigestAlgAndValueType;
 import eu.europa.ec.markt.tsl.jaxb.xades.IdentifierType;
@@ -34,6 +39,8 @@ import eu.europa.ec.markt.tsl.jaxb.xmldsig.DigestMethodType;
  * 
  * 
  * @version $Revision: 1867 $ - $Date: 2013-04-08 13:44:56 +0200 (Mon, 08 Apr 2013) $
+ *
+ * Inventi: adapted to overriden method signature only
  */
 
 public class XAdESProfileEPES extends XAdESProfileBES {
@@ -48,9 +55,9 @@ public class XAdESProfileEPES extends XAdESProfileBES {
 
     @Override
     protected QualifyingPropertiesType createXAdESQualifyingProperties(SignatureParameters params,
-            String signedInfoId, String dataFormatRef, String dataFormatMimetype) {
+            String signedInfoId, List<Reference> references, Document document) {
         QualifyingPropertiesType qualifyingProperties = super.createXAdESQualifyingProperties(params, signedInfoId,
-                dataFormatRef, dataFormatMimetype);
+                references, document);
 
         SignaturePolicyIdType policyId = getXades13ObjectFactory().createSignaturePolicyIdType();
         SignaturePolicyIdentifierType policyIdentifier = getXades13ObjectFactory()

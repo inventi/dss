@@ -16,37 +16,21 @@
  *
  * You should have received a copy of the GNU Lesser General Public License along with
  * "DSS - Digital Signature Services".  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Inventi:
+ *
+ * * Added support for compound documents
+ * * Support signing XML doc elements
  */
 
 package eu.europa.ec.markt.dss.signature.xades;
-
-import eu.europa.ec.markt.dss.DigestAlgorithm;
-import eu.europa.ec.markt.dss.SignatureAlgorithm;
-import eu.europa.ec.markt.dss.signature.Document;
-import eu.europa.ec.markt.dss.signature.InMemoryDocument;
-import eu.europa.ec.markt.dss.signature.SignaturePackaging;
-import eu.europa.ec.markt.dss.signature.SignatureParameters;
-import eu.europa.ec.markt.dss.signature.provider.SpecialPrivateKey;
-import eu.europa.ec.markt.tsl.jaxb.xades.AnyType;
-import eu.europa.ec.markt.tsl.jaxb.xades.CertIDListType;
-import eu.europa.ec.markt.tsl.jaxb.xades.CertIDType;
-import eu.europa.ec.markt.tsl.jaxb.xades.ClaimedRolesListType;
-import eu.europa.ec.markt.tsl.jaxb.xades.DataObjectFormatType;
-import eu.europa.ec.markt.tsl.jaxb.xades.DigestAlgAndValueType;
-import eu.europa.ec.markt.tsl.jaxb.xades.ObjectFactory;
-import eu.europa.ec.markt.tsl.jaxb.xades.QualifyingPropertiesType;
-import eu.europa.ec.markt.tsl.jaxb.xades.SignedDataObjectPropertiesType;
-import eu.europa.ec.markt.tsl.jaxb.xades.SignedPropertiesType;
-import eu.europa.ec.markt.tsl.jaxb.xades.SignedSignaturePropertiesType;
-import eu.europa.ec.markt.tsl.jaxb.xades.SignerRoleType;
-import eu.europa.ec.markt.tsl.jaxb.xades.UnsignedPropertiesType;
-import eu.europa.ec.markt.tsl.jaxb.xmldsig.DigestMethodType;
-import eu.europa.ec.markt.tsl.jaxb.xmldsig.X509IssuerSerialType;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -56,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -102,10 +87,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.xpath.XPathExpressionException;
@@ -119,10 +102,36 @@ import org.apache.jcp.xml.dsig.internal.dom.DOMXMLSignature;
 import org.apache.jcp.xml.dsig.internal.dom.XMLDSigRI;
 import org.apache.xml.security.Init;
 import org.apache.xml.security.algorithms.implementations.SignatureECDSA;
+import org.apache.xml.security.transforms.Transforms;
 import org.bouncycastle.util.encoders.Base64;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.xml.sax.SAXException;
+
+import eu.europa.ec.markt.dss.DigestAlgorithm;
+import eu.europa.ec.markt.dss.SignatureAlgorithm;
+import eu.europa.ec.markt.dss.signature.CompoundDocument;
+import eu.europa.ec.markt.dss.signature.Document;
+import eu.europa.ec.markt.dss.signature.InMemoryDocument;
+import eu.europa.ec.markt.dss.signature.MimeType;
+import eu.europa.ec.markt.dss.signature.SignaturePackaging;
+import eu.europa.ec.markt.dss.signature.SignatureParameters;
+import eu.europa.ec.markt.dss.signature.provider.SpecialPrivateKey;
+import eu.europa.ec.markt.tsl.jaxb.xades.AnyType;
+import eu.europa.ec.markt.tsl.jaxb.xades.CertIDListType;
+import eu.europa.ec.markt.tsl.jaxb.xades.CertIDType;
+import eu.europa.ec.markt.tsl.jaxb.xades.ClaimedRolesListType;
+import eu.europa.ec.markt.tsl.jaxb.xades.DataObjectFormatType;
+import eu.europa.ec.markt.tsl.jaxb.xades.DigestAlgAndValueType;
+import eu.europa.ec.markt.tsl.jaxb.xades.ObjectFactory;
+import eu.europa.ec.markt.tsl.jaxb.xades.QualifyingPropertiesType;
+import eu.europa.ec.markt.tsl.jaxb.xades.SignedDataObjectPropertiesType;
+import eu.europa.ec.markt.tsl.jaxb.xades.SignedPropertiesType;
+import eu.europa.ec.markt.tsl.jaxb.xades.SignedSignaturePropertiesType;
+import eu.europa.ec.markt.tsl.jaxb.xades.SignerRoleType;
+import eu.europa.ec.markt.tsl.jaxb.xades.UnsignedPropertiesType;
+import eu.europa.ec.markt.tsl.jaxb.xmldsig.DigestMethodType;
+import eu.europa.ec.markt.tsl.jaxb.xmldsig.X509IssuerSerialType;
 
 /**
  * Contains BES aspects of XAdES
@@ -140,6 +149,8 @@ public class XAdESProfileBES {
     private ObjectFactory xades13ObjectFactory = new ObjectFactory();
 
     private DatatypeFactory dataFactory;
+
+    private static final String ANONYMOUS_REFERENCE_URI = "detached-file";
 
     /**
      * The default constructor for XAdESProfileBES.
@@ -176,8 +187,14 @@ public class XAdESProfileBES {
         return xades13ObjectFactory;
     }
 
+    protected final QualifyingPropertiesType createXAdESQualifyingProperties(SignatureParameters params,
+            String signedInfoId, Reference reference, MimeType mimeType) {
+        return createXAdESQualifyingProperties(params, signedInfoId, Collections.singletonList(reference),
+                new InMemoryDocument(null, null, mimeType));
+    }
+
     protected QualifyingPropertiesType createXAdESQualifyingProperties(SignatureParameters params,
-            String signedInfoId, String dataFormatRef, String dataFormatMimetype) {
+            String signedInfoId, List<Reference> documentReferences, Document document) {
 
         // QualifyingProperties
         QualifyingPropertiesType qualifyingProperties = xades13ObjectFactory.createQualifyingPropertiesType();
@@ -205,12 +222,23 @@ public class XAdESProfileBES {
         signingCertificates.getCert().add(signingCertificateId);
         signedSignatureProperties.setSigningCertificate(signingCertificates);
 
+        // DataObjectProperties
         SignedDataObjectPropertiesType dataObjectProperties = new SignedDataObjectPropertiesType();
+        Iterator<Reference> refIt = documentReferences.iterator();
+        Iterator<Document> docIt = documentIterator(document);
+        while (refIt.hasNext() && docIt.hasNext()) {
+            Reference ref = refIt.next();
+            Document doc = docIt.next();
+            if (ref.getId() != null && doc.getMimeType() != null) {
         DataObjectFormatType dataFormat = new DataObjectFormatType();
-        dataFormat.setObjectReference(dataFormatRef);
-        dataFormat.setMimeType(dataFormatMimetype);
+                dataFormat.setObjectReference("#" + ref.getId());
+                dataFormat.setMimeType(doc.getMimeType().getCode());
         dataObjectProperties.getDataObjectFormat().add(dataFormat);
+            }
+        }
+        if (dataObjectProperties.getDataObjectFormat().size() > 0) {
         signedProperties.setSignedDataObjectProperties(dataObjectProperties);
+        }
         
         // SignerRole
         if (params.getClaimedSignerRole() != null) {
@@ -316,7 +344,7 @@ public class XAdESProfileBES {
 
         String xadesSignedPropertiesId = "xades-" + computeDeterministicId(params);
         QualifyingPropertiesType qualifyingProperties = createXAdESQualifyingProperties(params,
-                xadesSignedPropertiesId, "#xml_ref_id", "text/xml");
+                xadesSignedPropertiesId, reference, MimeType.XML);
         qualifyingProperties.setTarget("#" + signatureId);
 
         Node marshallNode = doc.createElement("marshall-node");
@@ -402,7 +430,7 @@ public class XAdESProfileBES {
 
         String xadesSignedPropertiesId = "xades-" + computeDeterministicId(params);
         QualifyingPropertiesType qualifyingProperties = createXAdESQualifyingProperties(params,
-                xadesSignedPropertiesId, "#signed-data-ref", "text/plain");
+                xadesSignedPropertiesId, reference, MimeType.PLAIN);
         qualifyingProperties.setTarget("#" + signatureId);
 
         Node marshallNode = doc.createElement("marshall-node");
@@ -478,39 +506,22 @@ public class XAdESProfileBES {
             XMLSignatureException, ParserConfigurationException, IOException {
 
         final XMLSignatureFactory fac = XMLSignatureFactory.getInstance("DOM", new XMLDSigRI());
-
-        signContext.setURIDereferencer(new URIDereferencer() {
-
-            @Override
-            public Data dereference(URIReference uriReference, XMLCryptoContext context)
-                    throws URIReferenceException {
-                if (uriReference.getURI().equals("detached-file")) {
-                    try {
-                        return new OctetStreamData(inside.openStream());
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
-                } else {
-                    return fac.getURIDereferencer().dereference(uriReference, context);
-                }
-            }
-        });
-
         DigestMethod digestMethod = fac.newDigestMethod(params.getDigestAlgorithm().getXmlId(), null);
 
-        List<XMLObject> objects = new ArrayList<XMLObject>();
+        // Create references
         List<Reference> references = new ArrayList<Reference>();
+        addReferences(documentIterator(inside), references, digestMethod, fac);
+        // Create repository
+        signContext.setURIDereferencer(new NameBasedDocumentRepository(inside, fac));
+
+        List<XMLObject> objects = new ArrayList<XMLObject>();
 
         Map<String, String> xpathNamespaceMap = new HashMap<String, String>();
         xpathNamespaceMap.put("ds", "http://www.w3.org/2000/09/xmldsig#");
 
-        /* The first reference concern the whole document */
-        Reference reference = fac.newReference("detached-file", digestMethod, null, null, "detached-ref-id");
-        references.add(reference);
-
         String xadesSignedPropertiesId = "xades-" + computeDeterministicId(params);
         QualifyingPropertiesType qualifyingProperties = createXAdESQualifyingProperties(params,
-                xadesSignedPropertiesId, "#detached-ref-id", "text/plain");
+                xadesSignedPropertiesId, references, inside);
         qualifyingProperties.setTarget("#" + signatureId);
 
         Node marshallNode = doc.createElement("marshall-node");
@@ -570,6 +581,54 @@ public class XAdESProfileBES {
 
         return signature;
 
+    }
+
+    private static Reference createReference(Document document, DigestMethod digestMethod, XMLSignatureFactory sigFac, Integer index)
+            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        String path, fragment;
+        if (MimeType.XML.equals(document.getMimeType()) &&
+                document.getName() != null && document.getName().contains("#")) {
+            path = document.getName().substring(0, document.getName().indexOf("#"));
+            try {
+                fragment = new URI(document.getName()).getFragment();
+            } catch (URISyntaxException e) {
+                throw new IllegalArgumentException(e.getMessage());
+            }
+        } else {
+            path = document.getName();
+            fragment = null;
+        }
+
+        List<Transform> transforms;
+        if (MimeType.XML.equals(document.getMimeType())) {
+            transforms = new ArrayList<Transform>();
+
+            // Convert a # (fragment) within document name to element-id based Reference
+            if (fragment != null) {
+                // FIXME: this xpath should not be hardcoded
+                String xpath = "ancestor-or-self::*[@ID=" + Utils.xPathLiteral(fragment) + "]";
+                transforms.add(sigFac.newTransform(Transforms.TRANSFORM_XPATH,
+                        new XPathFilterParameterSpec(xpath)));
+            }
+
+            // Canonicalize
+            transforms.add(sigFac.newCanonicalizationMethod(CanonicalizationMethod.INCLUSIVE,
+                    (C14NMethodParameterSpec) null));
+        } else {
+            transforms = null;
+        }
+
+        return sigFac.newReference(path, digestMethod, transforms, null,
+                index != null ? "ref-" + index : null);
+    }
+
+    private static void addReferences(Iterator<Document> documents, List<Reference> references, DigestMethod digestMethod, XMLSignatureFactory sigFac)
+            throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+        int i = 0;
+        while (documents.hasNext()) {
+            Document document = documents.next();
+            references.add(createReference(document, digestMethod, sigFac, i++));
+        }
     }
 
     /**
@@ -824,4 +883,66 @@ public class XAdESProfileBES {
         return digestAlgAndValue;
     }
 
+    private static Iterator<Document> documentIterator(Document document) {
+        if (document instanceof CompoundDocument) {
+            return ((CompoundDocument) document).iterator();
+        } else {
+            return Collections.singletonList(document).iterator();
+        }
+    }
+
+    private static class NameBasedDocumentRepository implements URIDereferencer {
+
+        private final Map<String, Document> repo;
+        private final XMLSignatureFactory sigFac;
+
+        public NameBasedDocumentRepository(Document document, XMLSignatureFactory sigFac) {
+            this.repo = new HashMap<String, Document>();
+            this.sigFac = sigFac;
+            registerDocuments(documentIterator(document));
+        }
+
+        @Override
+        public Data dereference(URIReference uriReference, XMLCryptoContext context)
+                throws URIReferenceException {
+            Document doc;
+            doc = findDocument(uriReference.getURI());
+            if (doc != null) {
+                try {
+                    return new OctetStreamData(doc.openStream());
+                } catch (IOException e) {
+                    throw new IllegalStateException(e);
+                }
+            } else {
+                return sigFac.getURIDereferencer().dereference(uriReference, context);
+            }
+        }
+
+        private void registerDocuments(Iterator<Document> documents) {
+            while (documents.hasNext()) {
+                Document document = documents.next();
+                String name = document.getName();
+                if (name == null) {
+                    // For backwards compatibility mainly
+                    name = ANONYMOUS_REFERENCE_URI;
+                    if (repo.containsKey(ANONYMOUS_REFERENCE_URI)) {
+                        throw new IllegalArgumentException("Multiple anonymous files are not supported");
+                    }
+                }
+                try {
+                    // Strip query string or fragment
+                    URI uri = new URI(name);
+                    name = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(),
+                            uri.getPort(), uri.getPath(), null, null).toString();
+                } catch (URISyntaxException e) {
+                    throw new RuntimeException(e);
+                }
+                repo.put(name, document);
+            }
+        }
+
+        private Document findDocument(String uri) {
+            return repo.get(uri != null ? uri : ANONYMOUS_REFERENCE_URI);
+        }
+    }
 }

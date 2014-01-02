@@ -20,7 +20,8 @@ package eu.europa.ec.markt.dss.signature;
  */
 public enum MimeType {
 
-    BINARY("application/octet-stream"), XML("text/xml"), PDF("application/pdf"), PKCS7("application/pkcs7-signature");
+    BINARY("application/octet-stream"), XML("text/xml"), PDF("application/pdf"), PKCS7("application/pkcs7-signature"),
+    PLAIN("text/plain");
 
     private String code;
 

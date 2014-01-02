@@ -20,6 +20,7 @@
 
 package eu.europa.ec.markt.dss.signature;
 
+import com.lowagie.text.Rectangle;
 import eu.europa.ec.markt.dss.DigestAlgorithm;
 import eu.europa.ec.markt.dss.SignatureAlgorithm;
 
@@ -70,6 +71,12 @@ public class SignatureParameters {
     
     private List<String> commitmentTypeIndication;
     
+    private byte[] signatureAppearance;
+
+    private float[] signaturePosition;
+
+    private String signatureName;
+
     /**
      * Get the signing certificate
      * 
@@ -356,4 +363,27 @@ public class SignatureParameters {
         this.signatureAlgorithm = signatureAlgorithm;
     }
 
+    public byte[] getSignatureAppearance() {
+        return signatureAppearance;
+    }
+
+    public void setSignatureAppearance(byte[] signatureAppearance) {
+        this.signatureAppearance = signatureAppearance;
+    }
+
+    public float[] getSignaturePosition() {
+        return signaturePosition;
+    }
+
+    public void setSignaturePosition(float[] signaturePosition) {
+        this.signaturePosition = signaturePosition;
+    }
+
+    public String getSignatureName() {
+        return signatureName;
+    }
+
+    public void setSignatureName(String signatureName) {
+        this.signatureName = signatureName;
+    }
 }

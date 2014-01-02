@@ -11,6 +11,7 @@
 	<description>DSS Document. Contains code specific to the creation of a signature in X/C/P-AdES format. </description>
 	<artifactId>dss-document</artifactId>
 	<packaging>jar</packaging>
+        <version>3.0.0-SNAPSHOT</version>
 	<build>
 		<plugins>
 			<plugin>
@@ -77,6 +78,7 @@
 			<artifactId>dss-itext</artifactId>
 			<type>jar</type>
 			<scope>compile</scope>
+                        <version>2.0.1</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>bctsp-jdk16</artifactId>
@@ -124,12 +126,14 @@
 			<artifactId>dss-spi</artifactId>
 			<type>jar</type>
 			<scope>compile</scope>
+                        <version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>eu.europa.ec.markt.dss</groupId>
 			<artifactId>dss-common</artifactId>
 			<type>jar</type>
 			<scope>compile</scope>
+                        <version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-codec</groupId>
@@ -140,6 +144,7 @@
 			<groupId>eu.europa.ec.markt.dss</groupId>
 			<artifactId>dss-service</artifactId>
 			<type>jar</type>
+                        <version>2.0.1</version>
 		</dependency>
 		<dependency>
 			<groupId>xerces</groupId>
