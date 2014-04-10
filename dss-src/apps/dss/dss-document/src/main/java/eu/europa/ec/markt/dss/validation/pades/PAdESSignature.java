@@ -79,7 +79,7 @@ public class PAdESSignature implements AdvancedSignature {
         this.pdfReader = reader;
         this.outerCatalog = outerCatalog;
         this.signatureDictionary = signatureDictionary;
-        cadesSignature = new CAdESSignature(signatureDictionary.get(PdfName.CONTENTS).getBytes());
+        cadesSignature = new CAdESSignature(signatureDictionary.getAsString(PdfName.CONTENTS).getOriginalBytes());
         this.pk = pk;
     }
 
