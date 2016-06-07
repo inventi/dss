@@ -48,12 +48,9 @@
  */
 package com.lowagie.text.pdf;
 
-import java.io.EOFException;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
@@ -75,6 +72,8 @@ import com.lowagie.text.Image;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.Phrase;
 import com.lowagie.text.Rectangle;
+
+import javax.xml.bind.DatatypeConverter;
 
 /**
  * This class takes care of the cryptographic options and appearances that form a signature.
@@ -148,6 +147,11 @@ public class PdfSignatureAppearance {
     private byte externalRSAdata[];
     private String digestEncryptionAlgorithm;
     private HashMap exclusionLocations;
+    private PdfTemplate template;
+
+    public void setTemplate(PdfTemplate template){
+        this.template = template;
+    }
 
     PdfSignatureAppearance(PdfStamperImp writer) {
         this.writer = writer;
@@ -381,6 +385,9 @@ public class PdfSignatureAppearance {
      * @throws DocumentException on error
      */
     public PdfTemplate getAppearance() throws DocumentException {
+        if(template != null){
+            return template;
+        }
         if (isInvisible()) {
             PdfTemplate t = new PdfTemplate(writer);
             t.setBoundingBox(new Rectangle(0, 0));

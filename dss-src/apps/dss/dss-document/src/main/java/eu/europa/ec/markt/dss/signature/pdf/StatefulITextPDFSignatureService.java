@@ -92,6 +92,8 @@ public class StatefulITextPDFSignatureService implements PDFSignatureService {
             sap.setImage(null);
             PdfReader stampReader = new PdfReader(parameters.getSignatureAppearance());
             PdfTemplate stamp = stp.getWriter().getImportedPage(stampReader, 1);
+            //stamp.setBoundingBox(new Rectangle(200, 100));
+            sap.setTemplate(stamp);
             sap.setSignatureGraphic(Image.getInstance(stamp));
 
             float[] pos = parameters.getSignaturePosition();
@@ -137,6 +139,7 @@ public class StatefulITextPDFSignatureService implements PDFSignatureService {
 
         out = new ByteArrayOutputStream();
         PdfStamper stp = prepareStamper(pdfData, out, parameters);
+
         PdfSignatureAppearance sap = stp.getSignatureAppearance();
 
         MessageDigest md;
