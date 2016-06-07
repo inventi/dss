@@ -56,6 +56,13 @@
 		-->
 	</modules>
 	<build>
+          <extensions>
+              <extension>
+                <groupId>fi.yle.tools</groupId>
+                <artifactId>aws-maven</artifactId>
+                <version>1.4.0</version>
+              </extension>
+          </extensions>
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -77,31 +84,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<executions>
-					<execution>
-						<phase>generate-sources</phase>
-						<goals>
-							<goal>aggregate</goal>
-						</goals>
-						<configuration>
-							<includeDependencySources>true</includeDependencySources>
-							<excludePackageNames>com.lowagie.*</excludePackageNames>
-							<dependencySourceIncludes>
-								<dependencySourceInclude>eu.europa.ec.markt.dss:*</dependencySourceInclude>
-							</dependencySourceIncludes>
-							<dependencySourceExcludes>
-								<dependencySourceExclude>eu.europa.ec.markt.dss:tlmanager-package</dependencySourceExclude>
-								<dependencySourceExclude>eu.europa.ec.markt.dss:dss-itext</dependencySourceExclude>
-							</dependencySourceExcludes>
-						</configuration>
-					</execution>
-				</executions>
-				<inherited>false</inherited>
 			</plugin>
 
 		</plugins>
@@ -196,88 +178,88 @@
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>tlmanager-core</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>tlmanager-ui-components</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>tlmanager-ui</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>tlmanager-package</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-webapp</artifactId>
 				<type>war</type>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-buildtools</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-itext</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-spi</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-service</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-document</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-ws</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-package</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>applet-common</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>applet-service</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>applet-core</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>applet-package</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 			<dependency>
 				<groupId>eu.europa.ec.markt.dss</groupId>
 				<artifactId>dss-common</artifactId>
-				<version>${project.version}</version>
+				<version>2.0.1</version>
 			</dependency>
 
 			<!-- Public Dependencies -->
@@ -390,6 +372,7 @@
 		</dependencies>
 	</dependencyManagement>
 	<repositories>
+
 		<repository>
 			<id>jboss-public</id>
 			<name>JBoss Public Maven repository</name>
@@ -411,26 +394,33 @@
 			<url>http://download.java.net/maven/2/</url>
 		</repository>
 	</repositories>
-	<pluginRepositories>
-		<pluginRepository>
-			<id>codehaus snapshot repository</id>
-			<url>http://snapshots.repository.codehaus.org/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</pluginRepository>
-	</pluginRepositories>
-        <distributionManagement>
 
-            <snapshotRepository>
-                <id>inventi.snapshots</id>
-                <name>inventi snapshots</name>
-                <url>http://nexus/content/repositories/snapshots/</url>
-            </snapshotRepository>
-            <repository>
-                <id>inventi.releases</id>
-                <name>inventi releases</name>
-                <url>http://nexus/content/repositories/releases/</url>
-            </repository>
+        <pluginRepositories>
+          <pluginRepository>
+            <id>yle-public</id>
+            <name>Yle public repository</name>
+            <url>http://maven.c4.yle.fi/release</url>
+            <layout>default</layout>
+          </pluginRepository>
+
+
+          <pluginRepository>
+            <id>codehaus snapshot repository</id>
+            <url>http://snapshots.repository.codehaus.org/</url>
+            <releases>
+              <enabled>true</enabled>
+            </releases>
+          </pluginRepository>
+        </pluginRepositories>
+
+        <distributionManagement>
+          <snapshotRepository>
+            <id>repo.inventi.lt</id>
+            <url>s3://repo.inventi.lt/snapshot</url>
+          </snapshotRepository>
+          <repository>
+            <id>repo.inventi.lt</id>
+            <url>s3://repo.inventi.lt/release</url>
+          </repository>
         </distributionManagement>
 </project>
