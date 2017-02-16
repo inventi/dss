@@ -11,6 +11,7 @@
 	<description>DSS Document. Contains code specific to the creation of a signature in X/C/P-AdES format. </description>
 	<artifactId>dss-document</artifactId>
 	<packaging>jar</packaging>
+	<version>2.0.1-INVENTI</version>
 	<build>
 		<plugins>
 			<plugin>

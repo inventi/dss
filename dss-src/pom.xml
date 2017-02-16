@@ -39,7 +39,6 @@
 	</developers>
 	<modules>
 		<module>apps/dss</module>
-		<module>apps/tlmanager</module>
 		<!-- The sscd-mocca-adapter is not delivred inside this release because to be used it needs some additional comercial libraries.
 
 		<module>apps/sscd-mocca-adapter</module>

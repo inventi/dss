@@ -13,17 +13,10 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>applet-common</module>
-		<module>applet-core</module>
-		<module>applet-package</module>
-		<module>applet-service</module>
 		<module>dss-document</module>
 		<module>dss-common</module>
 		<module>dss-itext</module>
 		<module>dss-service</module>
 		<module>dss-spi</module>
-		<module>dss-webapp</module>
-		<module>dss-ws</module>
-		<module>dss-report</module>
 	</modules>
 </project>
