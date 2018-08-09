@@ -158,7 +158,7 @@ public class StatefulPAdESServiceV2 implements DocumentSignatureService {
             PAdESProfileEPES padesProfile = new PAdESProfileEPES();
 
             PreComputedContentSigner contentSigner = new PreComputedContentSigner(
-                    SignatureAlgorithm.RSA.getJavaSignatureAlgorithm(parameters.getDigestAlgorithm()),
+                    parameters.getSignatureAlgorithm().getJavaSignatureAlgorithm(parameters.getDigestAlgorithm()),
                     signatureValue);
             DigestCalculatorProvider digestCalculatorProvider = new BcDigestCalculatorProvider();
 
